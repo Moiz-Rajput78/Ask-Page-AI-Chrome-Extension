@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ask Page AI</title>
+  <style>
+    :root{
+      color-scheme:light;
+      --bg:#f7f8fc;--panel:#fff;--text:#202124;--muted:#687078;--line:#e5e7eb;
+      --primary:#1a73e8;--primary-soft:#e8f0fe;--danger:#b3261e;--danger-soft:#fce8e6;
+      --success:#188038;--success-soft:#e6f4ea;--shadow:0 5px 18px rgba(32,33,36,.08)
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;overflow:hidden}
+    button,textarea,input{font:inherit}button{cursor:pointer}
+    .header{height:58px;flex:0 0 58px;padding:0 12px 0 14px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:20}
+    .brand{display:flex;align-items:center;gap:9px;min-width:0}.spark{font-size:20px;color:var(--primary)}.brand-name{font-weight:750;font-size:14px;white-space:nowrap}
+    .header-right{display:flex;align-items:center;gap:5px;min-width:0}
+    .model-picker{position:relative}
+    .model-selector{border:0;background:var(--primary-soft);color:#1558b0;border-radius:999px;padding:6px 8px;display:flex;align-items:center;gap:6px;font-size:10px;font-weight:750;white-space:nowrap;max-width:155px}
+    .model-selector:hover{filter:brightness(.98)}.model-selector.quota{background:var(--danger-soft);color:var(--danger)}
+    .model-dot{width:7px;height:7px;border-radius:50%;background:var(--success);flex:0 0 7px}.model-selector.quota .model-dot{background:var(--danger)}
+    .model-label{overflow:hidden;text-overflow:ellipsis}.chevron{font-size:9px;opacity:.75}
+    .model-menu{position:absolute;right:0;top:38px;width:224px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 12px 35px rgba(32,33,36,.18);z-index:100}
+    .model-menu[hidden]{display:none}.model-menu-title{font-size:10px;color:var(--muted);padding:6px 8px 7px;font-weight:650}
+    .model-option{width:100%;border:0;background:transparent;border-radius:10px;padding:8px 9px;display:flex;align-items:center;gap:9px;text-align:left;color:var(--text)}.model-option:hover{background:#f5f7fb}.model-option.active{background:var(--primary-soft)}.model-option.quota{background:#fff7f6;color:var(--danger)}.model-option.quota:hover{background:var(--danger-soft)}
+    .option-dot{width:8px;height:8px;border-radius:50%;background:var(--success);flex:0 0 8px}.model-option.quota .option-dot{background:var(--danger)}
+    .option-copy{min-width:0;flex:1}.option-name{font-size:11.5px;font-weight:720;white-space:nowrap}.option-status{font-size:9.5px;color:var(--muted);margin-top:1px}.model-option.quota .option-status{color:var(--danger)}.check{font-size:12px;color:var(--primary);font-weight:800}
+    .settings{border:0;background:transparent;width:32px;height:32px;border-radius:50%;font-size:17px;color:var(--muted)}.settings:hover{background:#f1f3f4}
+    .main{flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+    .context{display:none;background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:11px 12px;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,.02)}.context.show{display:flex}.context-icon{font-size:19px}.context-copy{flex:1;min-width:0}.ctx-title{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ctx-url{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}.ctx-meta{font-size:10.5px;color:var(--primary);margin-top:4px}
+    .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:1px}.chips::-webkit-scrollbar{display:none}.chip{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);padding:7px 11px;border-radius:999px;font-size:11.5px;color:#3c4043}.chip:hover{background:var(--primary-soft);border-color:#b9d1f7;color:#1558b0}
+    .welcome{background:linear-gradient(145deg,#fff,#f4f7ff);border:1px solid var(--line);border-radius:16px;padding:14px;font-size:12.8px;line-height:1.55;color:#444b53}.welcome strong{color:var(--text)}
+    .bubble{max-width:90%;padding:11px 13px;border-radius:17px;font-size:13px;line-height:1.55;word-wrap:break-word;white-space:normal}.user{align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:5px}.ai{align-self:flex-start;background:var(--panel);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04);border-bottom-left-radius:5px}.error{align-self:flex-start;background:#fff5f4;border:1px solid #f0c7c3;color:var(--danger)}.system-note{align-self:center;max-width:96%;padding:7px 10px;border-radius:999px;background:#eef3fb;color:#536579;font-size:10.5px;text-align:center}.typing{color:var(--muted)}
+    .input-wrap{flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);padding:10px 12px 11px}.composer{display:flex;align-items:flex-end;gap:8px;background:#f1f3f4;border:1px solid transparent;border-radius:22px;padding:7px 7px 7px 13px}.composer:focus-within{background:#fff;border-color:#9ec1f4;box-shadow:0 0 0 2px rgba(26,115,232,.08)}textarea{flex:1;border:0;background:transparent;outline:0;resize:none;min-height:26px;max-height:110px;line-height:1.45;font-size:13.5px;color:var(--text)}.send{width:34px;height:34px;flex:0 0 34px;border:0;border-radius:50%;background:var(--primary);color:#fff;font-size:18px;display:grid;place-items:center}.send:disabled{background:#a9c7ee;cursor:not-allowed}.status{font-size:10.5px;color:var(--muted);text-align:center;margin-top:7px;min-height:15px}
+    dialog{border:0;border-radius:18px;padding:0;width:min(340px,calc(100vw - 28px));box-shadow:0 18px 60px rgba(0,0,0,.22);background:#fff;color:var(--text)}dialog::backdrop{background:rgba(0,0,0,.35)}.modal{padding:18px}.modal h2{font-size:16px;margin-bottom:7px}.modal p{font-size:12px;line-height:1.5;color:var(--muted);margin-bottom:13px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:11px;font-weight:700}.field input{width:100%;border:1px solid #cfd4dc;border-radius:10px;padding:10px 11px;outline:0;font-size:12px}.field input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(26,115,232,.08)}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.modal-actions button{border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:650}.modal-actions .save{background:var(--primary);border-color:var(--primary);color:#fff}.key-note{font-size:10.5px!important;margin-top:9px!important;margin-bottom:0!important}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="brand"><span class="spark">✦</span><span class="brand-name">Ask Page AI</span></div>
+    <div class="header-right">
+      <div class="model-picker">
+        <button class="model-selector" id="modelSelector" type="button" aria-haspopup="true" aria-expanded="false" title="Switch Gemini model">
+          <span class="model-dot"></span><span class="model-label" id="modelLabel">Gemini 3.8 Flash</span><span class="chevron">▾</span>
+        </button>
+        <div class="model-menu" id="modelMenu" hidden>
+          <div class="model-menu-title">Choose Gemini model</div>
+          <div id="modelOptions"></div>
+        </div>
+      </div>
+      <button class="settings" id="btn-settings" title="API settings" aria-label="API settings">⚙</button>
+    </div>
+  </header>
+
+  <main class="main" id="chat">
+    <section class="context" id="contextCard">
+      <div class="context-icon">📄</div>
+      <div class="context-copy">
+        <div class="ctx-title" id="ctxTitle"></div>
+        <div class="ctx-url" id="ctxUrl"></div>
+        <div class="ctx-meta" id="ctxMeta"></div>
+      </div>
+    </section>
+
+    <div class="chips">
+      <button class="chip" data-q="Summarize this page clearly.">Summarize</button>
+      <button class="chip" data-q="Explain what work is happening on this page in simple words.">What is happening?</button>
+      <button class="chip" data-q="Explain the important concepts on this page in simple words.">Explain</button>
+      <button class="chip" data-q="List the main technologies, tools, or technical concepts mentioned on this page.">Tech stack</button>
+      <button class="chip" data-q="List the main action items or next steps from this page.">Action items</button>
+    </div>
+
+    <div class="welcome" id="welcome">
+      <strong>Ask questions about the current page.</strong><br />
+      I automatically read the whole page, generate a summary, and keep compact conversation memory when you switch Gemini models.
+    </div>
+  </main>
+
+  <footer class="input-wrap">
+    <div class="composer">
+      <textarea id="prompt" rows="1" placeholder="Ask about this page..."></textarea>
+      <button class="send" id="btn-ask" aria-label="Send">↑</button>
+    </div>
+    <div class="status" id="status">Ready</div>
+  </footer>
+
+  <dialog id="settingsDialog">
+    <form class="modal" method="dialog" id="settingsForm">
+      <h2>Gemini API settings</h2>
+      <p>Enter the Gemini API key you want to use for this local internship/demo build.</p>
+      <div class="field">
+        <label for="apiKey">Gemini API key</label>
+        <input id="apiKey" type="password" autocomplete="off" placeholder="Paste API key" />
+      </div>
+      <p class="key-note">Stored only in this Chrome profile using extension local storage. Do not commit keys to GitHub. A production build should call Gemini through a secure backend.</p>
+      <div class="modal-actions">
+        <button value="cancel" type="button" id="cancelSettings">Cancel</button>
+        <button class="save" value="default" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
